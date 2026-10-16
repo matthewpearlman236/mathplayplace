@@ -1,4 +1,5 @@
 import { drawFlipBottle, springBottleSkin } from './bottleFlip.ts'
+import { drawFootballCover } from './footballBros.ts'
 import { catalog, getGame, playableGames, searchCatalog, webShortcuts } from './catalog.ts'
 import { generateGame, loadGenerated, saveGenerated } from './generator.ts'
 import { mountGame, type Unmount } from './games.ts'
@@ -31,7 +32,9 @@ function card(item: (typeof catalog)[number]): string {
       ? `<div class="thumb thumb-ship">${spaceShipMark()}</div>`
       : item.id === 'bottle-flip'
         ? `<div class="thumb thumb-flip"><canvas data-bottle-cover></canvas></div>`
-        : `<div class="thumb" style="background:${item.tint}">${item.emoji}</div>`
+        : item.id === 'football-bros'
+          ? `<div class="thumb thumb-fb"><canvas data-fb-cover></canvas></div>`
+          : `<div class="thumb" style="background:${item.tint}">${item.emoji}</div>`
   return `
     <a class="card" ${linkAttrs(item.route)}>
       ${thumb}
@@ -98,9 +101,11 @@ export function homeScreen(): ScreenHandle {
     after: (root) => {
       const stopHero = startHeroLogo(root)
       const stopFlip = startBottleCovers(root)
+      const stopFb = startFbCovers(root)
       return () => {
         stopHero()
         stopFlip()
+        stopFb()
       }
     },
   }
@@ -249,6 +254,33 @@ function startBottleCovers(root: HTMLElement): Unmount {
   }
 }
 
+function startFbCovers(root: HTMLElement): Unmount {
+  const stops = [...root.querySelectorAll<HTMLCanvasElement>('[data-fb-cover]')].map((canvas) => {
+    let raf = 0
+    let t = 0
+    const tick = () => {
+      raf = requestAnimationFrame(tick)
+      t += 1
+      const rect = canvas.getBoundingClientRect()
+      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      const w = Math.max(2, Math.floor(rect.width * dpr))
+      const h = Math.max(2, Math.floor(rect.height * dpr))
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w
+        canvas.height = h
+      }
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+      drawFootballCover(ctx, w, h, t)
+    }
+    tick()
+    return () => cancelAnimationFrame(raf)
+  })
+  return () => {
+    stops.forEach((stop) => stop())
+  }
+}
+
 export function searchScreen(query: string): ScreenHandle {
   const results = searchCatalog(query)
   const q = query.trim()
@@ -298,12 +330,16 @@ export function searchScreen(query: string): ScreenHandle {
     `,
     after: (root) => {
       const stopFlip = startBottleCovers(root)
+      const stopFb = startFbCovers(root)
       root.querySelector<HTMLFormElement>('[data-search]')?.addEventListener('submit', (e) => {
         e.preventDefault()
         const value = new FormData(e.currentTarget as HTMLFormElement).get('q')
         location.hash = `#/search?q=${encodeURIComponent(String(value || ''))}`
       })
-      return stopFlip
+      return () => {
+        stopFlip()
+        stopFb()
+      }
     },
   }
 }
@@ -348,6 +384,7 @@ export function labScreen(): ScreenHandle {
 
 export function playScreen(id: string): ScreenHandle {
   if (id === 'spark-run') id = 'space-waves'
+  if (id === 'neon-snake') id = 'football-bros'
   const game = id === 'generated' ? undefined : getGame(id)
   const gen = id === 'generated' ? loadGenerated() : undefined
   const title = gen?.title || game?.title || 'Unknown'
@@ -361,7 +398,9 @@ export function playScreen(id: string): ScreenHandle {
           <p>${blurb}</p>
         </div>
       </section>
-      <div class="play-stage ${id === 'space-waves' || id === 'bottle-flip' ? 'waves-stage' : ''}" data-stage></div>
+      <div class="play-stage ${
+        id === 'space-waves' || id === 'bottle-flip' || id === 'football-bros' ? 'waves-stage' : ''
+      }" data-stage></div>
       <p class="play-hint">${
         id === 'memory-grid'
           ? 'Tap tiles to flip them.'
@@ -371,9 +410,9 @@ export function playScreen(id: string): ScreenHandle {
               ? 'Hold to climb, release to dive. Hold the right side (or arrows) to boost.'
               : id === 'bottle-flip'
                 ? 'Tap to flip. Keep tapping in the air. Land upright on the platforms.'
-                : id === 'neon-snake'
-                  ? 'Swipe the board or use arrow keys.'
-                  : 'Tap, drag, or use the keyboard inside the stage.'
+              : id === 'football-bros'
+                ? 'Drag to run. Tap the field or Pass to throw. WASD (P1) and arrows (P2).'
+                : 'Tap, drag, or use the keyboard inside the stage.'
       }</p>
     `,
     after: (root) => {

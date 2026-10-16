@@ -1,5 +1,6 @@
 import type { GenConfig } from './generator.ts'
 import { mountBottleFlip } from './bottleFlip.ts'
+import { mountFootballBros } from './footballBros.ts'
 import { mountSpaceWaves } from './spaceWaves.ts'
 
 export type Unmount = () => void
@@ -766,7 +767,7 @@ export function mountGenerated(host: HTMLElement, config: GenConfig): Unmount {
 export function mountGame(id: string, host: HTMLElement, gen?: GenConfig): Unmount {
   if (id === 'space-waves' || id === 'spark-run') return mountSpaceWaves(host)
   if (id === 'bottle-flip') return mountBottleFlip(host)
-  if (id === 'neon-snake') return mountSnake(host)
+  if (id === 'football-bros' || id === 'neon-snake') return mountFootballBros(host)
   if (id === 'box-bounce') return mountFlap(host)
   if (id === 'pulse-pong') return mountPong(host)
   if (id === 'brick-bash') return mountBreakout(host)

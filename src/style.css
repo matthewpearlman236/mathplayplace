@@ -252,11 +252,17 @@ h1 {
   overflow: hidden;
 }
 
-.thumb-flip canvas {
+.thumb-flip canvas,
+.thumb-fb canvas {
   display: block;
   width: 100%;
   height: 100%;
   pointer-events: none;
+}
+
+.thumb-fb {
+  background: #14532d;
+  overflow: hidden;
 }
 
 .thumb-ship {
@@ -1240,4 +1246,67 @@ h1 {
 
 .ach-row.on {
   border-color: #ffd16666;
+}
+
+.fb-host {
+  height: 100%;
+}
+
+.fb-hub {
+  height: 100%;
+  background:
+    radial-gradient(circle at 80% 0%, #0b226555, transparent 42%),
+    linear-gradient(180deg, #14532d, #052e16 55%, #0c0810);
+  overflow: auto;
+}
+
+.fb-play {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  position: relative;
+  touch-action: none;
+  background: #14532d;
+}
+
+.fb-play canvas {
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+.fb-teams {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 8px;
+  margin: 8px 0 18px;
+}
+
+.fb-team {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--c);
+  background: #0a1a12;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.fb-team span {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.fb-team.on,
+.fb-team:hover {
+  border-color: var(--c2);
+}
+
+.fb-shop {
+  display: grid;
+  gap: 8px;
+  max-width: 520px;
 }
